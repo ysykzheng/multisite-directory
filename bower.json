@@ -3,7 +3,8 @@
   "description": "",
   "main": "admin/js/multisite-directory-admin.js",
   "authors": [
-    "Meitar Moscovitz <meitarm@gmail.com>"
+    "Meitar Moscovitz <meitarm@gmail.com>",
+    "ysykzheng <ysykart@gmail.com>"
   ],
   "license": "GPL-3.0",
   "homepage": "https://wordpress.org/plugins/multisite-directory/",
