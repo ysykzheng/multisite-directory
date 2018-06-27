@@ -15,4 +15,4 @@ WP_MULTISITE=1 phpunit
 If you don't set the `WP_MULTISITE` environment variable, the tests will still run, but you will be testing a single-site install, and the plugin doesn't really do anything interesting on single-site installs (for obvious reasons).
 
 
-fork from https://wordpress.org/plugins/multisite-directory/
+fork from https://wordpress.org/plugins/multisite-directory/ version 0.2.3
