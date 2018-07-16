@@ -80,6 +80,7 @@ class Multisite_Directory_Shortcode {
             'logo_size' => array(72,72),
             'query_args' => array(), // Should be a JSON array which is passed to get_posts()
             'site_category__not_in' => '', // Convenience wrapper for complex tax_query
+            'site_category__in' => '', // Convenience wrapper for complex tax_query
         ), array_map(array($this, 'parseJsonAttribute'), $atts));
 
         // Parse special-case attributes.
@@ -89,6 +90,26 @@ class Multisite_Directory_Shortcode {
                 'field'    => 'slug',
                 'terms'    => explode(',', $this->atts['site_category__not_in']),
                 'operator' => 'NOT IN',
+            );
+            if (!empty($this->atts['query_args']) && isset($this->atts['query_args']['tax_query'])) {
+                if (!is_array($this->atts['query_args']['tax_query'])) {
+                    throw new InvalidArgumentException(
+                        'tax_query must be of type array, was '
+                        . gettype($this->atts['query_args']['tax_query'])
+                    );
+                }
+                $this->atts['query_args']['tax_query'][] = $q;
+            } else {
+                $this->atts['query_args']['tax_query'] = array($q);
+            }
+        }
+
+        if ($this->atts['site_category__in']) {
+            $q = array(
+                'taxonomy' => Multisite_Directory_Taxonomy::name,
+                'field'    => 'slug',
+                'terms'    => explode(',', $this->atts['site_category__in']),
+                'operator' => 'IN',
             );
             if (!empty($this->atts['query_args']) && isset($this->atts['query_args']['tax_query'])) {
                 if (!is_array($this->atts['query_args']['tax_query'])) {
