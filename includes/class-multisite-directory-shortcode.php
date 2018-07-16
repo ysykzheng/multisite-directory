@@ -79,36 +79,15 @@ class Multisite_Directory_Shortcode {
             'show_site_logo' => false,
             'logo_size' => array(72,72),
             'query_args' => array(), // Should be a JSON array which is passed to get_posts()
-            'site_category__not_in' => '', // Convenience wrapper for complex tax_query
-            'site_category__in' => '', // Convenience wrapper for complex tax_query
+            'site_category_in' => '', // Convenience wrapper for complex tax_query
         ), array_map(array($this, 'parseJsonAttribute'), $atts));
 
-        // Parse special-case attributes.
-        if ($this->atts['site_category__not_in']) {
-            $q = array(
-                'taxonomy' => Multisite_Directory_Taxonomy::name,
-                'field'    => 'slug',
-                'terms'    => explode(',', $this->atts['site_category__not_in']),
-                'operator' => 'NOT IN',
-            );
-            if (!empty($this->atts['query_args']) && isset($this->atts['query_args']['tax_query'])) {
-                if (!is_array($this->atts['query_args']['tax_query'])) {
-                    throw new InvalidArgumentException(
-                        'tax_query must be of type array, was '
-                        . gettype($this->atts['query_args']['tax_query'])
-                    );
-                }
-                $this->atts['query_args']['tax_query'][] = $q;
-            } else {
-                $this->atts['query_args']['tax_query'] = array($q);
-            }
-        }
 
-        if ($this->atts['site_category__in']) {
+        if ($this->atts['site_category_in']) {
             $q = array(
                 'taxonomy' => Multisite_Directory_Taxonomy::name,
                 'field'    => 'slug',
-                'terms'    => explode(',', $this->atts['site_category__in']),
+                'terms'    => explode(',', $this->atts['site_category_in']),
                 'operator' => 'IN',
             );
             if (!empty($this->atts['query_args']) && isset($this->atts['query_args']['tax_query'])) {
@@ -121,6 +100,7 @@ class Multisite_Directory_Shortcode {
                 $this->atts['query_args']['tax_query'][] = $q;
             } else {
                 $this->atts['query_args']['tax_query'] = array($q);
+                $this->atts['query_terms'] = explode(',', $this->atts['site_category_in']);
             }
         }
 
@@ -169,14 +149,19 @@ class Multisite_Directory_Shortcode {
             $html = $this->prepareMap($data);
         } else if ('list' === $this->atts['display']) {
             ob_start();
-
-            $terms = get_site_directory_terms($this->atts['query_args']);
+            
+            if(empty($this->atts['query_terms'])){
+                $terms = get_site_directory_terms($this->atts['query_args']);    
+            }else{
+                $terms = get_site_directory_terms($this->atts['query_terms']);    
+            }
             if (!is_wp_error($terms) && !empty($terms)) {
                 // TODO: Refactor this so it's not embedded HTML.
                 //       I used output buffering just for now.
 ?>
 <ul class="network-directory-sites">
     <?php foreach ($terms as $term) { $similar_sites = get_sites_in_directory_by_term($term, $this->atts['query_args']); ?>
+    <?php if(count($similar_sites)>0) { ?>
     <li><?php print esc_html($term->name); ?>
         <ul>
         <?php foreach ($similar_sites as $site_detail) { if (get_current_blog_id() == $site_detail->blog_id) { continue; } ?>
@@ -188,6 +173,8 @@ class Multisite_Directory_Shortcode {
         </ul>
     </li>
     <?php } ?>
+    <?php } ?>
+
 </ul>
 <?php
             }
