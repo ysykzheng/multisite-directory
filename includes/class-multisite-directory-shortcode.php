@@ -100,7 +100,9 @@ class Multisite_Directory_Shortcode {
                 $this->atts['query_args']['tax_query'][] = $q;
             } else {
                 $this->atts['query_args']['tax_query'] = array($q);
-                $this->atts['query_terms'] = explode(',', $this->atts['site_category_in']);
+                $this->atts['query_terms'] = array(
+                    'slug' => explode(',', $this->atts['site_category_in'])
+                );
             }
         }
 
@@ -150,7 +152,7 @@ class Multisite_Directory_Shortcode {
         } else if ('list' === $this->atts['display']) {
             ob_start();
             
-            if(empty($this->atts['query_terms'])){
+            if(!isset($this->atts['query_terms'])){
                 $terms = get_site_directory_terms($this->atts['query_args']);    
             }else{
                 $terms = get_site_directory_terms($this->atts['query_terms']);    
